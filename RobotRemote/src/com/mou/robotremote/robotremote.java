@@ -14,13 +14,16 @@ import android.widget.Toast;
 import com.neurosky.thinkgear.*;
 import java.io.*; 
 import java.net.*;
+import android.view.View.*;
+import android.widget.*;
 
 
 public class robotremote extends Activity {
 	BluetoothAdapter bluetoothAdapter;
 	
-	TextView tv;
+	TextView tv, Meditation,Attention;
 	Button b;
+	ScrollView scrollview;
 	
 	TGDevice tgDevice;
 	final boolean rawEnabled = false;
@@ -55,18 +58,65 @@ public class robotremote extends Activity {
 		
 	}
 	
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        tv = (TextView)findViewById(R.id.textView1);
-        tv.setText("");
+        tv = (TextView)findViewById(R.id.log);
+		b = (Button)findViewById(R.id.connect);
         tv.append("Android version: " + Integer.valueOf(android.os.Build.VERSION.SDK) + "\n" );
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		
-		udpSend("127.0.0.1",12345,"test");
+		scrollview = (ScrollView) findViewById(R.id.scrollView1);
 		
+		
+		
+		final Button forward = (Button) findViewById(R.id.Forward);
+		final Button backward = (Button) findViewById(R.id.Backward);
+		final Button left = (Button) findViewById(R.id.Left);
+		final Button right = (Button) findViewById(R.id.Right);
+		
+		Meditation = (TextView) findViewById(R.id.TVM);
+		Attention = (TextView) findViewById(R.id.TVA);
+		
+		
+		
+		right.setOnClickListener(new OnClickListener(){
+			public void onClick(View p){
+				udpSend("127.0.0.1",12345,"Mright");
+				tv.append("UDP SENT: Mright\n");
+				
+			}
+		});
+		left.setOnClickListener(new OnClickListener(){
+			public void onClick(View p){
+				udpSend("127.0.0.1",12345,"Mleft");
+				tv.append("UDP SENT: Mleft\n");
+			}
+		});
+		forward.setOnClickListener(new OnClickListener(){
+			public void onClick(View p){
+				udpSend("127.0.0.1",12345,"Mforward");
+				tv.append("UDP SENT: Mforward\n");
+			}
+		});
+		backward.setOnClickListener(new OnClickListener(){
+			public void onClick(View p){
+				udpSend("127.0.0.1",12345,"Mbackward");
+				tv.append("UDP SENT: Mbackward\n");
+			}
+		});
+		
+		
+		//udpSend("127.0.0.1",12345,"test");
+		
+		b.setOnClickListener(new OnClickListener(){
+			public void onClick(View p){
+				tgDevice.connect(rawEnabled);
+			}
+		});
         if(bluetoothAdapter == null) {
         	// Alert user that Bluetooth is not available
         	Toast.makeText(this, "Bluetooth not available", Toast.LENGTH_LONG).show();
@@ -89,6 +139,17 @@ public class robotremote extends Activity {
     private final Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
+			/*
+			scrollview.post(new Runnable() {
+				@Override
+				public void run() {
+					scrollview.fullScroll(ScrollView.FOCUS_DOWN);
+				}
+			});
+			*/
+			try{
+				scrollview.fullScroll(View.FOCUS_DOWN);
+			}catch(Exception e){}
         	switch (msg.what) {
             case TGDevice.MSG_STATE_CHANGE:
 
@@ -125,12 +186,18 @@ public class robotremote extends Activity {
         		tv.append("Heart rate: " + msg.arg1 + "\n");
                 break;
             case TGDevice.MSG_ATTENTION:
-            		//att = msg.arg1;
-            		tv.append("Attention: " + msg.arg1 + "\n");
+            	    //att = msg.arg1;
+            		Attention.setText("A:"+msg.arg1);
             		//Log.v("HelloA", "Attention: " + att + "\n");
             	break;
             case TGDevice.MSG_MEDITATION:
-
+				    Meditation.setText("M:"+msg.arg1);
+					
+					if (msg.arg1>70){
+						udpSend("127.0.0.1",12345,"Mforward");
+						tv.append("* UDP SENT: Mforward\n");
+					}
+					
             	break;
             case TGDevice.MSG_BLINK:
             		tv.append("Blink: " + msg.arg1 + "\n");
@@ -151,8 +218,9 @@ public class robotremote extends Activity {
     };
     
     public void doStuff(View view) {
-    	if(tgDevice.getState() != TGDevice.STATE_CONNECTING && tgDevice.getState() != TGDevice.STATE_CONNECTED)
-    		tgDevice.connect(rawEnabled);   
+    	if(tgDevice.getState() != TGDevice.STATE_CONNECTING && tgDevice.getState() != TGDevice.STATE_CONNECTED){
+    		tgDevice.connect(rawEnabled);
+		}
     	//tgDevice.ena
     }
 }
