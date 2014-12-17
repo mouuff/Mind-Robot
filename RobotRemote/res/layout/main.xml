@@ -34,7 +34,7 @@
 		android:layout_width="wrap_content"
 		android:layout_above="@id/logScroll"
 		android:id="@+id/Backward"
-		android:drawableTop="@drawable/backward"/>
+		android:drawableBottom="@drawable/backward"/>
 
 	<Button
 		android:layout_height="wrap_content"
@@ -42,13 +42,13 @@
 		android:layout_above="@id/Backward"
 		android:layout_toLeftOf="@id/Backward"
 		android:id="@+id/Left"
-		android:drawableTop="@drawable/left"/>
+		android:drawableStart="@drawable/left"/>
 
 	<Button
 		android:layout_height="wrap_content"
 		android:layout_width="wrap_content"
 		android:layout_above="@id/Backward"
-		android:drawableTop="@drawable/right"
+		android:drawableRight="@drawable/right"
 		android:layout_toRightOf="@id/Backward"
 		android:id="@+id/Right"/>
 
