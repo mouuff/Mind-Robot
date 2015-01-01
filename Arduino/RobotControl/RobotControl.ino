@@ -1,96 +1,127 @@
-#include <SPI.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
+
+char ssid[] = "Freebox-779353";
+char pass[] = "acervandam-coutimini!4-undum-coactiv4";
 int status = WL_IDLE_STATUS;
-char ssid[] = "yourNetwork"; //  your network SSID (name)
-char pass[] = "secretPassword";    // your network password (use for WPA, or use as key for WEP)
-int keyIndex = 0;            // your network key Index number (needed only for WEP)
 
-unsigned int localPort = 2390;      // local port to listen on
+int localPort = 12345;
 
-char packetBuffer[255]; //buffer to hold incoming packet
-char  ReplyBuffer[] = "acknowledged";       // a string to send back
+char packetBuffer[255];
+char ReplyBuffer[] = "pong";
+
 
 WiFiUDP Udp;
 
-void setup() {
-  //Initialize serial and wait for port to open:
-  Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
 
-  // check for the presence of the shield:
+//set up the pins
+int enableMD = 11;
+int enableMG = 12;
+int MD1 = 2;
+int MD2 = 3;
+int MG1 = 8;
+int MG2 = 13;
+
+void rmove(int dir){
+  //1 forward
+  //2 right
+  //3 backward
+  //4 left
+  
+  switch (dir){
+    case (1):
+      //avancer
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,HIGH);
+      
+      digitalWrite(MG1,HIGH);
+      digitalWrite(MG2,LOW);
+      break;
+    case (2):
+      //droite
+      digitalWrite(MD1,HIGH);
+      digitalWrite(MD2,LOW);
+      
+      digitalWrite(MG1,HIGH);
+      digitalWrite(MG2,LOW);
+      break;
+    
+    case (3):
+      //reculer
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,HIGH);
+      
+      digitalWrite(MG1,HIGH);
+      digitalWrite(MG2,LOW);
+      break;
+      
+    case (4):
+      //gauche
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,HIGH);
+      
+      digitalWrite(MG1,LOW);
+      digitalWrite(MG2,HIGH);
+      break;
+     
+    default:
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,LOW);
+      
+      digitalWrite(MG1,LOW);
+      digitalWrite(MG2,LOW);
+      break;
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+  
+  pinMode(MD1,OUTPUT);
+  pinMode(MD2,OUTPUT);
+  pinMode(MG1,OUTPUT);
+  pinMode(MD2,OUTPUT);
+  pinMode(enableMD,OUTPUT);
+  pinMode(enableMG,OUTPUT);
+  
+  digitalWrite(enableMD,HIGH);
+  digitalWrite(enableMG,HIGH);
+  
+  
   if (WiFi.status() == WL_NO_SHIELD) {
     Serial.println("WiFi shield not present");
-    // don't continue:
-    while (true);
+    while(true);
   }
-
-  String fv = WiFi.firmwareVersion();
-  if ( fv != "1.1.0" )
-    Serial.println("Please upgrade the firmware");
-
-  // attempt to connect to Wifi network:
-  while ( status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to SSID: ");
+  Serial.println(WiFi.firmwareVersion());
+  while ( status != WL_CONNECTED) { 
+    Serial.print("Attempting to connect to WPA SSID: ");
     Serial.println(ssid);
-    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-    status = WiFi.begin(ssid);
-
-    // wait 10 seconds for connection:
+    status = WiFi.begin(ssid, pass);
     delay(10000);
   }
-  Serial.println("Connected to wifi");
-  printWifiStatus();
-
-  Serial.println("\nStarting connection to server...");
-  // if you get a connection, report back via serial:
-  Udp.begin(localPort);
+  
+  Serial.println(WiFi.localIP());
+  
+  if (Udp.begin(localPort)){
+    Serial.println("Now listenning on ");
+    Serial.println(localPort);
+  }
+  else{
+    Serial.println("Socket unavaiable");
+  }
 }
 
 void loop() {
-
-  // if there's data available, read a packet
   int packetSize = Udp.parsePacket();
-  if (packetSize)
-  {
-    Serial.print("Received packet of size ");
-    Serial.println(packetSize);
-    Serial.print("From ");
-    IPAddress remoteIp = Udp.remoteIP();
-    Serial.print(remoteIp);
-    Serial.print(", port ");
-    Serial.println(Udp.remotePort());
-
-    // read the packet into packetBufffer
+  if (packetSize){
     int len = Udp.read(packetBuffer, 255);
     if (len > 0) packetBuffer[len] = 0;
-    Serial.println("Contents:");
+    
     Serial.println(packetBuffer);
 
-    // send a reply, to the IP address and port that sent us the packet we received
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
     Udp.write(ReplyBuffer);
     Udp.endPacket();
   }
-}
-
-
-void printWifiStatus() {
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
-
-  // print your WiFi shield's IP address:
-  IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
-
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
 }
