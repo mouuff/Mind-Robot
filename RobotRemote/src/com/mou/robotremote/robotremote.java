@@ -28,6 +28,7 @@ public class robotremote extends Activity {
 	ScrollView scrollview;
 	
 	boolean inMain = true;
+	boolean lastCommandMind = false;
 	
 	TGDevice tgDevice;
 	final boolean rawEnabled = false;
@@ -147,6 +148,11 @@ public class robotremote extends Activity {
 		final Button left = (Button) findViewById(R.id.Left);
 		final Button right = (Button) findViewById(R.id.Right);
 		
+		final Button CUp = (Button) findViewById(R.id.CUp);
+		final Button CDown = (Button) findViewById(R.id.CDown);
+		final Button CLeft = (Button) findViewById(R.id.CLeft);
+		final Button CRight = (Button) findViewById(R.id.CRight);
+		
 		Meditation = (TextView) findViewById(R.id.TVM);
 		Attention = (TextView) findViewById(R.id.TVA);
 		
@@ -154,6 +160,7 @@ public class robotremote extends Activity {
 			public boolean onTouch(View v,MotionEvent event){
 				if (event.getAction() == MotionEvent.ACTION_DOWN){
 					send("Mright");
+					lastCommandMind = false;
 				}
 				else if (event.getAction() == MotionEvent.ACTION_UP){
 					send("Mstop");
@@ -165,6 +172,7 @@ public class robotremote extends Activity {
 			public boolean onTouch(View v,MotionEvent event){
 				if (event.getAction() == MotionEvent.ACTION_DOWN){
 					send("Mleft");
+					lastCommandMind = false;
 				}
 				else if (event.getAction() == MotionEvent.ACTION_UP){
 					send("Mstop");
@@ -176,6 +184,7 @@ public class robotremote extends Activity {
 			public boolean onTouch(View v,MotionEvent event){
 				if (event.getAction() == MotionEvent.ACTION_DOWN){
 					send("Mforward");
+					lastCommandMind = false;
 				}
 				else if (event.getAction() == MotionEvent.ACTION_UP){
 					send("Mstop");
@@ -187,6 +196,7 @@ public class robotremote extends Activity {
 			public boolean onTouch(View v,MotionEvent event){
 				if (event.getAction() == MotionEvent.ACTION_DOWN){
 					send("Mbackward");
+					lastCommandMind = false;
 				}
 				else if (event.getAction() == MotionEvent.ACTION_UP){
 					send("Mstop");
@@ -194,6 +204,52 @@ public class robotremote extends Activity {
 			return true;
 			}
 		});
+		
+		
+		CRight.setOnTouchListener(new OnTouchListener(){
+				public boolean onTouch(View v,MotionEvent event){
+					if (event.getAction() == MotionEvent.ACTION_DOWN){
+						send("Cright");
+					}
+					else if (event.getAction() == MotionEvent.ACTION_UP){
+						send("Cstop");
+					}
+					return true;
+				}
+			});
+		CLeft.setOnTouchListener(new OnTouchListener(){
+				public boolean onTouch(View v,MotionEvent event){
+					if (event.getAction() == MotionEvent.ACTION_DOWN){
+						send("Cleft");
+					}
+					else if (event.getAction() == MotionEvent.ACTION_UP){
+						send("Cstop");
+					}
+					return true;
+				}
+			});
+		CUp.setOnTouchListener(new OnTouchListener(){
+				public boolean onTouch(View v,MotionEvent event){
+					if (event.getAction() == MotionEvent.ACTION_DOWN){
+						send("Cup");
+					}
+					else if (event.getAction() == MotionEvent.ACTION_UP){
+						send("Cstop");
+					}
+					return true;
+				}
+			});
+		CDown.setOnTouchListener(new OnTouchListener(){
+				public boolean onTouch(View v,MotionEvent event){
+					if (event.getAction() == MotionEvent.ACTION_DOWN){
+						send("Cdown");
+					}
+					else if (event.getAction() == MotionEvent.ACTION_UP){
+						send("Cstop");
+					}
+					return true;
+				}
+			});
 		
 		
 		connect.setOnClickListener(new OnClickListener(){
@@ -268,6 +324,10 @@ public class robotremote extends Activity {
 					
 					if (msg.arg1>MinMeditation){
 						send("Mforward");
+						lastCommandMind = true;
+					}
+					else if (lastCommandMind){
+						send("Mstop");
 					}
 					
             	break;
