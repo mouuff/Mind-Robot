@@ -28,6 +28,7 @@ public class robotremote extends Activity {
 	ScrollView scrollview;
 	
 	boolean inMain = true;
+	boolean lastCommandMind = false;
 	
 	TGDevice tgDevice;
 	final boolean rawEnabled = false;
@@ -154,6 +155,7 @@ public class robotremote extends Activity {
 			public boolean onTouch(View v,MotionEvent event){
 				if (event.getAction() == MotionEvent.ACTION_DOWN){
 					send("Mright");
+					lastCommandMind = false;
 				}
 				else if (event.getAction() == MotionEvent.ACTION_UP){
 					send("Mstop");
@@ -165,6 +167,7 @@ public class robotremote extends Activity {
 			public boolean onTouch(View v,MotionEvent event){
 				if (event.getAction() == MotionEvent.ACTION_DOWN){
 					send("Mleft");
+					lastCommandMind = false;
 				}
 				else if (event.getAction() == MotionEvent.ACTION_UP){
 					send("Mstop");
@@ -176,6 +179,7 @@ public class robotremote extends Activity {
 			public boolean onTouch(View v,MotionEvent event){
 				if (event.getAction() == MotionEvent.ACTION_DOWN){
 					send("Mforward");
+					lastCommandMind = false;
 				}
 				else if (event.getAction() == MotionEvent.ACTION_UP){
 					send("Mstop");
@@ -187,6 +191,7 @@ public class robotremote extends Activity {
 			public boolean onTouch(View v,MotionEvent event){
 				if (event.getAction() == MotionEvent.ACTION_DOWN){
 					send("Mbackward");
+					lastCommandMind = false;
 				}
 				else if (event.getAction() == MotionEvent.ACTION_UP){
 					send("Mstop");
@@ -268,6 +273,10 @@ public class robotremote extends Activity {
 					
 					if (msg.arg1>MinMeditation){
 						send("Mforward");
+						lastCommandMind = true;
+					}
+					else if (lastCommandMind){
+						send("Mstop");
 					}
 					
             	break;
