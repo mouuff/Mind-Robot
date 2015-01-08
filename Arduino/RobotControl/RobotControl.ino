@@ -37,6 +37,8 @@ void rmove(int dir){
   //4 left
   
   switch (dir){
+    //all this thing can be modified
+    //depends how you connected the engine
     case (1):
       //avancer
       digitalWrite(MD1,LOW);
@@ -87,9 +89,13 @@ void rmove(int dir){
 void setup() {
   Serial.begin(9600);
   
-  //ServoVertical.attach(0);
-  ServoHorizontal.attach(11);
+  ServoVertical.attach(15);
+  ServoHorizontal.attach(14);
+  //servos must be powered by 3.3v on arduino
+  //otherwise it could crash the wifi shield
   
+  ServoHorizontal.write(ServoAngH);
+  ServoVertical.write(ServoAngV);
   
   pinMode(MD1,OUTPUT);
   pinMode(MD2,OUTPUT);
@@ -174,21 +180,21 @@ void loop() {
     Udp.endPacket();
   }
   if (CameraMoving){
-    if (String(packetBuffer).equals("Cup")){
+    if (String(packetBuffer).equals("Cup") && ServoAngV < 180){
         ServoAngV += 1;
       }
-      else if (String(packetBuffer).equals("Cdown")){
+      else if (String(packetBuffer).equals("Cdown") && ServoAngV > 0){
         ServoAngV -= 1;
       }
-      else if (String(packetBuffer).equals("Cright")){
+      else if (String(packetBuffer).equals("Cright") && ServoAngH < 180){
         ServoAngH += 1;
       }
-      else if (String(packetBuffer).equals("Cleft")){
+      else if (String(packetBuffer).equals("Cleft") && ServoAngH > 0){
         ServoAngH -= 1;
       }
       ServoHorizontal.write(ServoAngH);
-      ServoHorizontal.write(ServoAngV);
+      ServoVertical.write(ServoAngV);
       
-      Serial.println(ServoAngH);
+      Serial.println(ServoAngV);
   }
 }
