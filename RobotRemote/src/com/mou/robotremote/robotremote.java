@@ -18,6 +18,8 @@ import android.view.View.*;
 import android.widget.*;
 import android.view.*;
 import android.content.*;
+import android.webkit.*;
+import android.os.*;
 
 
 public class robotremote extends Activity {
@@ -28,11 +30,13 @@ public class robotremote extends Activity {
 	ScrollView scrollview;
 	
 	boolean inMain = true;
+	
 	boolean lastCommandMind = false;
 	
 	TGDevice tgDevice;
 	final boolean rawEnabled = false;
 	
+	CountDownTimer autorefresh;
 	
 	String ip;
 	int MinMeditation, port;
@@ -117,6 +121,10 @@ public class robotremote extends Activity {
         tv = (TextView)findViewById(R.id.log);
 		connect = (Button)findViewById(R.id.connect);
         tv.append("Android version: " + Integer.valueOf(android.os.Build.VERSION.SDK) + "\n" );
+		final WebView engine = (WebView) findViewById(R.id.capteurs);
+		
+
+		
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		
 		scrollview = (ScrollView) findViewById(R.id.logScroll);
@@ -155,6 +163,20 @@ public class robotremote extends Activity {
 		
 		Meditation = (TextView) findViewById(R.id.TVM);
 		Attention = (TextView) findViewById(R.id.TVA);
+		
+		autorefresh = new CountDownTimer(15000,1000){
+			public void onTick(long millis){
+				
+			}
+			public void onFinish(){
+				try{
+					engine.loadUrl("http://"+ip);
+				}catch(Exception e){}
+				autorefresh.start();
+			}
+		};
+		autorefresh.start();
+		
 		
 		right.setOnTouchListener(new OnTouchListener(){
 			public boolean onTouch(View v,MotionEvent event){

@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <Servo.h>
+#include <String.h>
 
 char ssid[] = "android";
 char pass[] = "android42";
@@ -20,7 +21,7 @@ int ServoAngH = 90;
 int ServoAngV = 90;
 
 WiFiUDP Udp;
-
+WiFiServer server(80);
 
 //set up the pins
 int enableMD = 32;
@@ -41,8 +42,8 @@ void rmove(int dir){
     //depends how you connected the engine
     case (1):
       //avancer
-      digitalWrite(MD1,LOW);
-      digitalWrite(MD2,HIGH);
+      digitalWrite(MD1,HIGH);
+      digitalWrite(MD2,LOW);
       
       digitalWrite(MG1,HIGH);
       digitalWrite(MG2,LOW);
@@ -50,8 +51,8 @@ void rmove(int dir){
     case (2):
       //droite
       
-      digitalWrite(MD1,LOW);
-      digitalWrite(MD2,HIGH);
+      digitalWrite(MD1,HIGH);
+      digitalWrite(MD2,LOW);
       
       digitalWrite(MG1,LOW);
       digitalWrite(MG2,HIGH);
@@ -60,8 +61,8 @@ void rmove(int dir){
     
     case (3):
       //reculer
-      digitalWrite(MD1,HIGH);
-      digitalWrite(MD2,LOW);
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,HIGH);
       
       digitalWrite(MG1,LOW);
       digitalWrite(MG2,HIGH);
@@ -69,8 +70,8 @@ void rmove(int dir){
       
     case (4):
       //gauche
-      digitalWrite(MD1,HIGH);
-      digitalWrite(MD2,LOW);
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,HIGH);
       
       digitalWrite(MG1,HIGH);
       digitalWrite(MG2,LOW);
@@ -122,6 +123,10 @@ void setup() {
   
   Serial.println(WiFi.localIP());
   
+ 
+  
+  server.begin();
+    
   if (Udp.begin(localPort)){
     Serial.println("Now listenning on ");
     Serial.println(localPort);
@@ -132,6 +137,53 @@ void setup() {
 }
 
 void loop() {
+  WiFiClient client = server.available();
+  if (client) {
+    Serial.println("new client");
+    
+    
+    // an http request ends with a blank line
+    boolean currentLineIsBlank = true;
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+        Serial.write(c);
+        
+        
+        if (c == '\n' && currentLineIsBlank) {
+          // send a standard http response header
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-Type: text/html");
+          client.println();
+          client.println("<!DOCTYPE HTML>");
+          client.println("<html>");
+          client.println("<body bgcolor=\"#000000\">");
+
+          client.println("<font color=\"red\">Reception des capteurs:");
+          
+          client.print(String(analogRead(8)));
+          
+          client.println("</font>");
+          
+          client.println("</html>");
+          
+          client.stop();
+          Serial.write("Stopped client");
+        }
+        
+        if (c == '\n') {
+          // you're starting a new line
+          currentLineIsBlank = true;
+        } 
+        else if (c != '\r') {
+          // you've gotten a character on the current line
+          currentLineIsBlank = false;
+        }
+      }
+    }
+  }
+  
+  
   int packetSize = Udp.parsePacket();
   if (packetSize){
     
@@ -170,6 +222,7 @@ void loop() {
         rmove(4);
       }
       else{
+        //CStop
         rmove(0);
         Serial.println(packetBuffer);
       }

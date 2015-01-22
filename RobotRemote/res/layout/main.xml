@@ -81,7 +81,7 @@
 		android:layout_width="wrap_content"
 		android:layout_above="@id/logScroll"
 		android:layout_toLeftOf="@+id/CRight"
-		android:drawableBottom="@drawable/backward"
+		android:drawableBottom="@drawable/cdown"
 		android:id="@+id/CDown"/>
 
 	<Button
@@ -90,7 +90,7 @@
 		android:layout_width="wrap_content"
 		android:layout_above="@id/CDown"
 		android:layout_toLeftOf="@id/CDown"
-		android:drawableStart="@drawable/left"
+		android:drawableStart="@drawable/cleft"
 		android:id="@+id/CLeft"/>
 
 	<Button
@@ -99,7 +99,7 @@
 		android:layout_width="wrap_content"
 		android:layout_above="@id/CDown"
 		android:layout_alignParentRight="true"
-		android:drawableRight="@drawable/right"
+		android:drawableRight="@drawable/cright"
 		android:id="@+id/CRight"/>
 
 	<Button
@@ -108,8 +108,16 @@
 		android:layout_width="wrap_content"
 		android:layout_above="@id/CRight"
 		android:layout_toLeftOf="@id/CRight"
-		android:drawableTop="@drawable/forward"
+		android:drawableTop="@drawable/cup"
 		android:id="@+id/CUp"/>
+	
+	<WebView
+		android:layout_width="150dp"
+		android:layout_height="150dp"
+		android:layout_centerHorizontal="true"
+		android:layout_above="@id/connect"
+		android:id="@+id/capteurs"
+	/>
 
 </RelativeLayout>
 
