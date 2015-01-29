@@ -50,13 +50,10 @@ void rmove(int dir){
       break;
     case (2):
       //droite
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,HIGH);
       
-      digitalWrite(MD1,HIGH);
-      digitalWrite(MD2,LOW);
-      
-      digitalWrite(MG1,LOW);
-      digitalWrite(MG2,HIGH);
-      
+      digitalWrite(MG1,HIGH);
       break;
     
     case (3):
@@ -70,11 +67,12 @@ void rmove(int dir){
       
     case (4):
       //gauche
-      digitalWrite(MD1,LOW);
-      digitalWrite(MD2,HIGH);
-      
-      digitalWrite(MG1,HIGH);
       digitalWrite(MG2,LOW);
+      digitalWrite(MD1,HIGH);
+      digitalWrite(MD2,LOW);
+      
+      digitalWrite(MG1,LOW);
+      digitalWrite(MG2,HIGH);
       break;
      
     default:
