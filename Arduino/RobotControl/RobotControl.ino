@@ -54,6 +54,7 @@ void rmove(int dir){
       digitalWrite(MD2,HIGH);
       
       digitalWrite(MG1,HIGH);
+      digitalWrite(MG2,LOW);
       break;
     
     case (3):
@@ -67,7 +68,6 @@ void rmove(int dir){
       
     case (4):
       //gauche
-      digitalWrite(MG2,LOW);
       digitalWrite(MD1,HIGH);
       digitalWrite(MD2,LOW);
       
