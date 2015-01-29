@@ -11,7 +11,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+import com.zerokol.views.JoystickView;
+import com.zerokol.views.JoystickView.OnJoystickMoveListener;
 import com.neurosky.thinkgear.*;
+
 import java.io.*; 
 import java.net.*;
 import android.view.View.*;
@@ -28,6 +32,7 @@ public class robotremote extends Activity {
 	TextView tv, Meditation,Attention;
 	Button connect;
 	ScrollView scrollview;
+	private JoystickView joystick;
 	
 	boolean inMain = true;
 	
@@ -43,32 +48,6 @@ public class robotremote extends Activity {
 	String ip;
 	int MinMeditation, port;
 	
-	public boolean send(String s){
-		try{
-			udp Udp = new udp();
-			Udp.udpSend(ip,12345,s);
-			tv.append("[*] UDP send: "+s+" "+ip+"\n");
-			
-			if (s.contains("stop")){
-				udpInUse = false;
-			}
-			else{
-				udpInUse = true;
-			}
-			
-			try{
-				scrollview.fullScroll(View.FOCUS_DOWN);
-			}catch(Exception e){}
-			
-			autorefresh.cancel();
-			autorefresh.start();
-			
-			return true;
-		}catch(Exception e){
-			tv.append("\n[x] UDP send error");
-			return false;
-		}
-	}
 	
 	
     /** Called when the activity is first created. */
@@ -108,15 +87,6 @@ public class robotremote extends Activity {
 		tv.append("\nPort: "+port);
 		tv.append("\nMin meditation: "+MinMeditation+"\n");
 		
-		final Button forward = (Button) findViewById(R.id.Forward);
-		final Button backward = (Button) findViewById(R.id.Backward);
-		final Button left = (Button) findViewById(R.id.Left);
-		final Button right = (Button) findViewById(R.id.Right);
-		
-		final Button CUp = (Button) findViewById(R.id.CUp);
-		final Button CDown = (Button) findViewById(R.id.CDown);
-		final Button CLeft = (Button) findViewById(R.id.CLeft);
-		final Button CRight = (Button) findViewById(R.id.CRight);
 		
 		final WebView engine = (WebView) findViewById(R.id.capteurs);
 		
@@ -142,100 +112,34 @@ public class robotremote extends Activity {
 		autorefresh.start();
 		
 		
-		right.setOnTouchListener(new OnTouchListener(){
-			public boolean onTouch(View v,MotionEvent event){
-				if (event.getAction() == MotionEvent.ACTION_DOWN){
-					send("Mright");
-					lastCommandMind = false;
+		joystick = (JoystickView) findViewById(R.id.Joystick);
+
+        //Event listener that always returns the variation of the angle in degrees, motion power in percentage and direction of movement
+        joystick.setOnJoystickMoveListener(new OnJoystickMoveListener() {
+			@Override
+			public void onValueChanged(int angle, int power, int direction) {
+				udp Udp = new udp();
+				
+				switch (direction) {
+					case JoystickView.FRONT:
+						//send("Mforward");
+						Udp.udpSend(ip,port,"Mforward");
+						break;
+					case JoystickView.RIGHT:
+						Udp.udpSend(ip,port,"Mright");
+						break;
+					case JoystickView.BOTTOM:
+						Udp.udpSend(ip,port,"Mbackward");
+						break;
+					case JoystickView.LEFT:
+						Udp.udpSend(ip,port,"Mleft");
+						break;
+					default:
+						Udp.udpSend(ip,port,"Mstop");
 				}
-				else if (event.getAction() == MotionEvent.ACTION_UP){
-					send("Mstop");
-				}
-				return true;
 			}
-		});
-		left.setOnTouchListener(new OnTouchListener(){
-			public boolean onTouch(View v,MotionEvent event){
-				if (event.getAction() == MotionEvent.ACTION_DOWN){
-					send("Mleft");
-					lastCommandMind = false;
-				}
-				else if (event.getAction() == MotionEvent.ACTION_UP){
-					send("Mstop");
-				}
-				return true;
-			}
-		});
-		forward.setOnTouchListener(new OnTouchListener(){
-			public boolean onTouch(View v,MotionEvent event){
-				if (event.getAction() == MotionEvent.ACTION_DOWN){
-					send("Mforward");
-					lastCommandMind = false;
-				}
-				else if (event.getAction() == MotionEvent.ACTION_UP){
-					send("Mstop");
-				}
-				return true;
-			}
-		});
-		backward.setOnTouchListener(new OnTouchListener(){
-			public boolean onTouch(View v,MotionEvent event){
-				if (event.getAction() == MotionEvent.ACTION_DOWN){
-					send("Mbackward");
-					lastCommandMind = false;
-				}
-				else if (event.getAction() == MotionEvent.ACTION_UP){
-					send("Mstop");
-				}
-			return true;
-			}
-		});
+		},JoystickView.DEFAULT_LOOP_INTERVAL);
 		
-		
-		CRight.setOnTouchListener(new OnTouchListener(){
-				public boolean onTouch(View v,MotionEvent event){
-					if (event.getAction() == MotionEvent.ACTION_DOWN){
-						send("Cright");
-					}
-					else if (event.getAction() == MotionEvent.ACTION_UP){
-						send("Cstop");
-					}
-					return true;
-				}
-			});
-		CLeft.setOnTouchListener(new OnTouchListener(){
-				public boolean onTouch(View v,MotionEvent event){
-					if (event.getAction() == MotionEvent.ACTION_DOWN){
-						send("Cleft");
-					}
-					else if (event.getAction() == MotionEvent.ACTION_UP){
-						send("Cstop");
-					}
-					return true;
-				}
-			});
-		CUp.setOnTouchListener(new OnTouchListener(){
-				public boolean onTouch(View v,MotionEvent event){
-					if (event.getAction() == MotionEvent.ACTION_DOWN){
-						send("Cup");
-					}
-					else if (event.getAction() == MotionEvent.ACTION_UP){
-						send("Cstop");
-					}
-					return true;
-				}
-			});
-		CDown.setOnTouchListener(new OnTouchListener(){
-				public boolean onTouch(View v,MotionEvent event){
-					if (event.getAction() == MotionEvent.ACTION_DOWN){
-						send("Cdown");
-					}
-					else if (event.getAction() == MotionEvent.ACTION_UP){
-						send("Cstop");
-					}
-					return true;
-				}
-			});
 		
 		
 		connect.setOnClickListener(new OnClickListener(){
@@ -243,6 +147,8 @@ public class robotremote extends Activity {
 				tgDevice.connect(rawEnabled);
 			}
 		});
+		
+		
         if(bluetoothAdapter == null) {
         	// Alert user that Bluetooth is not available
         	Toast.makeText(this, "Bluetooth not available", Toast.LENGTH_LONG).show();
@@ -309,11 +215,11 @@ public class robotremote extends Activity {
 				    Meditation.setText("M:"+msg.arg1);
 					
 					if (msg.arg1>MinMeditation){
-						send("Mforward");
+						//send("Mforward");
 						lastCommandMind = true;
 					}
 					else if (lastCommandMind){
-						send("Mstop");
+						//send("Mstop");
 					}
 					
             	break;
