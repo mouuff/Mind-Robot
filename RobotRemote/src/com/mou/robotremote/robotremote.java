@@ -33,6 +33,8 @@ public class robotremote extends Activity {
 	
 	boolean lastCommandMind = false;
 	
+	boolean udpInUse = false;
+	
 	TGDevice tgDevice;
 	final boolean rawEnabled = false;
 	
@@ -40,71 +42,27 @@ public class robotremote extends Activity {
 	
 	String ip;
 	int MinMeditation, port;
-	DatagramSocket s;
-	InetAddress local;
-	
-    private void writeToFile(String data) {
-		try {
-			OutputStreamWriter outputStreamWriter = new OutputStreamWriter(openFileOutput("settings.txt", Context.MODE_PRIVATE|Context.MODE_WORLD_READABLE));
-			outputStreamWriter.write(data);
-			outputStreamWriter.close();
-		}
-		catch (IOException e) {
-			Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_LONG).show();
-		} 
-	}
-
-	private String readFromFile() {
-		try {
-			BufferedReader inputReader = new BufferedReader(new InputStreamReader(
-																openFileInput("settings.txt")));
-			String inputString;
-			StringBuffer stringBuffer = new StringBuffer();                
-			while ((inputString = inputReader.readLine()) != null) {
-				stringBuffer.append(inputString + "\n");
-			}
-			return stringBuffer.toString();
-		} catch (IOException e) {
-			Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_LONG).show();
-		}
-		return "";
-	}
-	
-	public void udpSend(String server,int server_port,String messageStr){
-		try
-		{
-			s = new DatagramSocket();
-		}
-		catch (SocketException e)
-		{Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_SHORT);
-		}
-		try
-		{
-			local = InetAddress.getByName(server);
-		}
-		catch (UnknownHostException e)
-		{Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_SHORT);
-		}
-		int msg_length = messageStr.length();
-		byte[] message = messageStr.getBytes();
-		DatagramPacket p = new DatagramPacket(message, msg_length,local,server_port);
-		try
-		{
-			s.send(p);
-		}
-		catch (IOException e)
-		{Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_SHORT);}
-		
-	}
 	
 	public boolean send(String s){
 		try{
-			udpSend(ip,12345,s);
+			udp Udp = new udp();
+			Udp.udpSend(ip,12345,s);
 			tv.append("[*] UDP send: "+s+" "+ip+"\n");
+			
+			if (s.contains("stop")){
+				udpInUse = false;
+			}
+			else{
+				udpInUse = true;
+			}
 			
 			try{
 				scrollview.fullScroll(View.FOCUS_DOWN);
 			}catch(Exception e){}
+			
+			autorefresh.cancel();
+			autorefresh.start();
+			
 			return true;
 		}catch(Exception e){
 			tv.append("\n[x] UDP send error");
@@ -118,28 +76,27 @@ public class robotremote extends Activity {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+		
+		
         tv = (TextView)findViewById(R.id.log);
 		connect = (Button)findViewById(R.id.connect);
-        tv.append("Android version: " + Integer.valueOf(android.os.Build.VERSION.SDK) + "\n" );
-		final WebView engine = (WebView) findViewById(R.id.capteurs);
 		
-
+        tv.append("Android version: " + Integer.valueOf(android.os.Build.VERSION.SDK) + "\n" );
 		
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		
 		scrollview = (ScrollView) findViewById(R.id.logScroll);
-		
-		
+		Saver saver = new Saver();
 		
 		String file;
 		String fs[];
-		file = readFromFile();
+		file = saver.readFromFile(getApplicationContext());
 		
 		if (file.equals("")){
 			port = 12345;
 			ip = "127.0.0.1";
 			MinMeditation = 70;
-			writeToFile(ip+"\n"+Integer.toString(port)+"\n"+Integer.toString(MinMeditation));
+			saver.writeToFile(getApplicationContext(),ip+"\n"+Integer.toString(port)+"\n"+Integer.toString(MinMeditation));
 		}
 		else{
 			fs = file.split("\n");
@@ -161,16 +118,23 @@ public class robotremote extends Activity {
 		final Button CLeft = (Button) findViewById(R.id.CLeft);
 		final Button CRight = (Button) findViewById(R.id.CRight);
 		
+		final WebView engine = (WebView) findViewById(R.id.capteurs);
+		
 		Meditation = (TextView) findViewById(R.id.TVM);
 		Attention = (TextView) findViewById(R.id.TVA);
 		
-		autorefresh = new CountDownTimer(15000,1000){
+		
+		autorefresh = new CountDownTimer(10000,1000){
+			//auto reload web page of sensors
 			public void onTick(long millis){
 				
 			}
 			public void onFinish(){
 				try{
-					engine.loadUrl("http://"+ip);
+					if (!udpInUse){
+						Toast.makeText(getApplicationContext(),"Reloading sensors",Toast.LENGTH_LONG).show();
+						engine.loadUrl("http://"+ip);
+					}
 				}catch(Exception e){}
 				autorefresh.start();
 			}
@@ -371,6 +335,7 @@ public class robotremote extends Activity {
 		scrollview.post(new Runnable() {
 				@Override
 				public void run() {
+					//auto scrolls every new messages
 					scrollview.fullScroll(ScrollView.FOCUS_DOWN);
 				}
 			});
@@ -385,7 +350,6 @@ public class robotremote extends Activity {
     	if(tgDevice.getState() != TGDevice.STATE_CONNECTING && tgDevice.getState() != TGDevice.STATE_CONNECTED){
     		tgDevice.connect(rawEnabled);
 		}
-    	//tgDevice.ena
     }
 	
 	@Override
@@ -411,7 +375,8 @@ public class robotremote extends Activity {
 				
 				save.setOnClickListener(new OnClickListener(){
 					public void onClick(View v){
-						writeToFile(iptext.getText()+"\n"+porttext.getText()+"\n"+meditationtext.getText());
+						Saver saver = new Saver();
+						saver.writeToFile(getApplicationContext(),iptext.getText()+"\n"+porttext.getText()+"\n"+meditationtext.getText());
 						Intent xi = new Intent(getApplicationContext(), robotremote.class);
 						xi.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						startActivity(xi);
@@ -439,5 +404,20 @@ public class robotremote extends Activity {
 		}
 
 		super.onBackPressed();
+	}
+
+	@Override
+	protected void onPause()
+	{
+		autorefresh.cancel();//stop reloading sensors when not used
+		super.onPause();
+	}
+
+	@Override
+	protected void onResume()
+	{
+		// TODO: Implement this method
+		autorefresh.start();
+		super.onResume();
 	}
 }
