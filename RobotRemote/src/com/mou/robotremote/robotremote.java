@@ -32,7 +32,7 @@ public class robotremote extends Activity {
 	TextView tv, Meditation,Attention;
 	Button connect;
 	ScrollView scrollview;
-	private JoystickView joystick;
+	private JoystickView joystick, camjoystick;
 	
 	boolean inMain = true;
 	
@@ -48,6 +48,8 @@ public class robotremote extends Activity {
 	String ip;
 	int MinMeditation, port;
 	
+	int Vang, Hang;
+	
 	
 	
     /** Called when the activity is first created. */
@@ -55,6 +57,9 @@ public class robotremote extends Activity {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+		
+		Vang = 90;
+		Hang = 90;
 		
 		
         tv = (TextView)findViewById(R.id.log);
@@ -113,16 +118,18 @@ public class robotremote extends Activity {
 		
 		
 		joystick = (JoystickView) findViewById(R.id.Joystick);
-
+		camjoystick = (JoystickView) findViewById(R.id.CamJoystick);
+		
+		
         //Event listener that always returns the variation of the angle in degrees, motion power in percentage and direction of movement
         joystick.setOnJoystickMoveListener(new OnJoystickMoveListener() {
 			@Override
 			public void onValueChanged(int angle, int power, int direction) {
+				udpInUse = true;
 				udp Udp = new udp();
 				
 				switch (direction) {
 					case JoystickView.FRONT:
-						//send("Mforward");
 						Udp.udpSend(ip,port,"Mforward");
 						break;
 					case JoystickView.RIGHT:
@@ -136,11 +143,58 @@ public class robotremote extends Activity {
 						break;
 					default:
 						Udp.udpSend(ip,port,"Mstop");
+						udpInUse = false;
 				}
 			}
 		},JoystickView.DEFAULT_LOOP_INTERVAL);
 		
-		
+		camjoystick.setOnJoystickMoveListener(new OnJoystickMoveListener() {
+				@Override
+				public void onValueChanged(int angle, int power, int direction) {
+					udpInUse = true;
+					udp Udp = new udp();
+					
+
+					switch (direction) {
+						case JoystickView.FRONT:
+							Vang += power/15;
+							break;
+						case JoystickView.FRONT_RIGHT:
+							Vang += power/15;
+							Hang += power/15;
+							break;
+						
+						case JoystickView.RIGHT:
+							Hang += power/15;
+							break;
+							
+						case JoystickView.RIGHT_BOTTOM:
+							Hang += power/15;
+							Vang -= power/15;
+							break;
+							
+						case JoystickView.BOTTOM:
+							Vang -= power/15;
+							break;
+						case JoystickView.BOTTOM_LEFT:
+							Vang -= power/15;
+							Hang -= power/15;
+							break;
+						case JoystickView.LEFT:
+							Hang -= power/15;
+							break;
+						case JoystickView.LEFT_FRONT:
+							Hang -= power/15;
+							Vang += power/15;
+							break;
+						default:
+						    Hang = 90;
+							Vang = 90;
+							udpInUse = false;
+					}
+					Udp.udpSend(ip,port,"C"+Integer.toString(Vang)+":"+Integer.toString(Hang));
+				}
+			},JoystickView.DEFAULT_LOOP_INTERVAL);
 		
 		connect.setOnClickListener(new OnClickListener(){
 			public void onClick(View p){

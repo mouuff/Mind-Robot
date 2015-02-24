@@ -10,11 +10,9 @@ int status = WL_IDLE_STATUS;
 int localPort = 12345;
 
 char packetBuffer[255];
-char lastCommand[255];
 
 char ReplyBuffer[] = "pong";
 
-boolean CameraMoving = false;
 
 Servo ServoHorizontal, ServoVertical;
 int ServoAngH = 90;
@@ -189,15 +187,14 @@ void loop() {
     if (len > 0) packetBuffer[len] = 0;
     
     if (packetBuffer[0] == 'C'){
-      if (String(packetBuffer).equals("Cstop")){
-        Serial.println("[*] Stopped camera");
-        CameraMoving = false;
-      }
-      else{
-        Serial.println("[*] Moving Camera");
-        CameraMoving = true;
-      }
-      strcpy(lastCommand,packetBuffer);
+      String buff = String(packetBuffer);
+      int Hang = buff.substring(buff.indexOf(":")+1).toInt();
+      int Vang = buff.substring(1, buff.indexOf(":")).toInt();
+      
+      ServoHorizontal.write(Hang);
+      ServoVertical.write(Vang);
+      
+      Serial.println(Vang);
     }
     
     if (packetBuffer[0] == 'M'){
@@ -229,23 +226,5 @@ void loop() {
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
     Udp.write(ReplyBuffer);
     Udp.endPacket();
-  }
-  if (CameraMoving){
-    if (String(packetBuffer).equals("Cup") && ServoAngV < 180){
-        ServoAngV += 1;
-      }
-      else if (String(packetBuffer).equals("Cdown") && ServoAngV > 0){
-        ServoAngV -= 1;
-      }
-      else if (String(packetBuffer).equals("Cright") && ServoAngH < 180){
-        ServoAngH += 1;
-      }
-      else if (String(packetBuffer).equals("Cleft") && ServoAngH > 0){
-        ServoAngH -= 1;
-      }
-      ServoHorizontal.write(ServoAngH);
-      ServoVertical.write(ServoAngV);
-      
-      Serial.println(ServoAngV);
   }
 }

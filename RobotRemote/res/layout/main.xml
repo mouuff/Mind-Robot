@@ -50,6 +50,13 @@
 		android:layout_height="150dp"
 		android:layout_width="150dp"
 		android:layout_alignParentLeft="true"/>
+	
+	<com.zerokol.views.JoystickView
+		android:id="@+id/CamJoystick"
+		android:layout_above="@id/logScroll"
+		android:layout_height="150dp"
+		android:layout_width="150dp"
+		android:layout_alignParentRight="true"/>
 
 	<WebView
 		android:layout_width="150dp"
