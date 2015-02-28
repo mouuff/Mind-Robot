@@ -107,8 +107,10 @@ public class robotremote extends Activity {
 			public void onFinish(){
 				try{
 					if (!udpInUse){
-						Toast.makeText(getApplicationContext(),"Reloading sensors",Toast.LENGTH_LONG).show();
-						engine.loadUrl("http://"+ip);
+						try{
+							Toast.makeText(getApplicationContext(),"Reloading sensors",Toast.LENGTH_LONG).show();
+							engine.loadUrl("http://"+ip);
+						}catch(Exception e){}
 					}
 				}catch(Exception e){}
 				autorefresh.start();
@@ -267,13 +269,15 @@ public class robotremote extends Activity {
             	break;
             case TGDevice.MSG_MEDITATION:
 				    Meditation.setText("M:"+msg.arg1);
-					
+					udpInUse = true;
+					udp Udp = new udp();
 					if (msg.arg1>MinMeditation){
-						//send("Mforward");
+						Udp.udpSend(ip,port,"Mforward");
 						lastCommandMind = true;
 					}
 					else if (lastCommandMind){
-						//send("Mstop");
+						Udp.udpSend(ip,port,"Mstop");
+						udpInUse = false;
 					}
 					
             	break;
@@ -306,12 +310,7 @@ public class robotremote extends Activity {
         }
     };
     
-    public void doStuff(View view) {
-    	if(tgDevice.getState() != TGDevice.STATE_CONNECTING && tgDevice.getState() != TGDevice.STATE_CONNECTED){
-    		tgDevice.connect(rawEnabled);
-		}
-    }
-	
+    
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu){
 		getMenuInflater().inflate(R.layout.menu, menu);
