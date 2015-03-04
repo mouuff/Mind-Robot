@@ -29,6 +29,7 @@ int MD2 = 26;
 int MG1 = 24;
 int MG2 = 22;
 
+
 void rmove(int dir){
   //1 forward
   //2 right
@@ -48,11 +49,13 @@ void rmove(int dir){
       break;
     case (2):
       //droite
-      digitalWrite(MD1,LOW);
-      digitalWrite(MD2,HIGH);
       
-      digitalWrite(MG1,HIGH);
-      digitalWrite(MG2,LOW);
+      digitalWrite(MD1,HIGH);
+      digitalWrite(MD2,LOW);
+      
+      digitalWrite(MG1,LOW);
+      digitalWrite(MG2,HIGH);
+      
       break;
     
     case (3):
@@ -66,12 +69,49 @@ void rmove(int dir){
       
     case (4):
       //gauche
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,HIGH);
+      
+      digitalWrite(MG1,HIGH);
+      digitalWrite(MG2,LOW);
+      break;
+    
+    case (5):
+      //droite tout droit
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,LOW);
+      
+      digitalWrite(MG1,HIGH);
+      digitalWrite(MG2,LOW);
+      break;
+      
+    case (6):
+      //gauche tout droit
       digitalWrite(MD1,HIGH);
+      digitalWrite(MD2,LOW);
+      
+      digitalWrite(MG1,LOW);
+      digitalWrite(MG2,LOW);
+      break;
+    
+    case (7):
+      //gauche arriere
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,HIGH);
+      
+      digitalWrite(MG1,LOW);
+      digitalWrite(MG2,LOW);
+      break;
+    
+    case (8):
+      //droite arriere
+      digitalWrite(MD1,LOW);
       digitalWrite(MD2,LOW);
       
       digitalWrite(MG1,LOW);
       digitalWrite(MG2,HIGH);
       break;
+   
      
     default:
       digitalWrite(MD1,LOW);
@@ -215,6 +255,22 @@ void loop() {
       else if (String(packetBuffer).equals("Mleft")){
         Serial.println("[*] engine left");
         rmove(4);
+      }
+      else if (String(packetBuffer).equals("Mforward-left")){
+        Serial.println("[*] engine left");
+        rmove(5);
+      }
+      else if (String(packetBuffer).equals("Mforward-right")){
+        Serial.println("[*] engine left");
+        rmove(6);
+      }
+      else if (String(packetBuffer).equals("Mbackward-left")){
+        Serial.println("[*] engine left");
+        rmove(7);
+      }
+      else if (String(packetBuffer).equals("Mbackward-right")){
+        Serial.println("[*] engine left");
+        rmove(8);
       }
       else{
         //CStop

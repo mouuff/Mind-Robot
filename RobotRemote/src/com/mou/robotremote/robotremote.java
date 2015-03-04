@@ -134,15 +134,28 @@ public class robotremote extends Activity {
 					case JoystickView.FRONT:
 						Udp.udpSend(ip,port,"Mforward");
 						break;
+					case JoystickView.FRONT_RIGHT:
+						Udp.udpSend(ip,port,"Mforward-right");
+						break;
+					case JoystickView.LEFT_FRONT:
+						Udp.udpSend(ip,port,"Mforward-left");
+						break;
 					case JoystickView.RIGHT:
 						Udp.udpSend(ip,port,"Mright");
+						break;
+					case JoystickView.RIGHT_BOTTOM:
+						Udp.udpSend(ip,port,"Mbackward-right");
 						break;
 					case JoystickView.BOTTOM:
 						Udp.udpSend(ip,port,"Mbackward");
 						break;
+					case JoystickView.BOTTOM_LEFT:
+						Udp.udpSend(ip,port,"Mbackward-left");
+						break;
 					case JoystickView.LEFT:
 						Udp.udpSend(ip,port,"Mleft");
 						break;
+					
 					default:
 						Udp.udpSend(ip,port,"Mstop");
 						udpInUse = false;
