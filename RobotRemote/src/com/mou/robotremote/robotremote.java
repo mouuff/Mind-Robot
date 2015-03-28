@@ -27,14 +27,22 @@ import android.os.*;
 
 
 public class robotremote extends Activity {
+	public static final int SERVO_SPEED = 20;
+	public static final int LOOP_INTERVAL = 400;
+	//lower than 200 will result in a crash
+	
 	BluetoothAdapter bluetoothAdapter;
 	
 	TextView tv, Meditation,Attention;
-	Button connect;
+	Button connect, show;
 	ScrollView scrollview;
 	private JoystickView joystick, camjoystick;
 	
 	boolean inMain = true;
+	
+	boolean webvisible = false;
+	
+	boolean MindForward;
 	
 	boolean lastCommandMind = false;
 	
@@ -62,8 +70,11 @@ public class robotremote extends Activity {
 		Hang = 90;
 		
 		
+		MindForward = false;
+		
         tv = (TextView)findViewById(R.id.log);
-		connect = (Button)findViewById(R.id.connect);
+		connect = (Button) findViewById(R.id.connect);
+		show = (Button) findViewById(R.id.showSensor);
 		
         tv.append("Android version: " + Integer.valueOf(android.os.Build.VERSION.SDK) + "\n" );
 		
@@ -94,6 +105,7 @@ public class robotremote extends Activity {
 		
 		
 		final WebView engine = (WebView) findViewById(R.id.capteurs);
+		engine.setVisibility(View.INVISIBLE);
 		
 		Meditation = (TextView) findViewById(R.id.TVM);
 		Attention = (TextView) findViewById(R.id.TVA);
@@ -106,7 +118,7 @@ public class robotremote extends Activity {
 			}
 			public void onFinish(){
 				try{
-					if (!udpInUse){
+					if (!udpInUse && webvisible){
 						try{
 							Toast.makeText(getApplicationContext(),"Reloading sensors",Toast.LENGTH_LONG).show();
 							engine.loadUrl("http://"+ip);
@@ -122,6 +134,20 @@ public class robotremote extends Activity {
 		joystick = (JoystickView) findViewById(R.id.Joystick);
 		camjoystick = (JoystickView) findViewById(R.id.CamJoystick);
 		
+		show.setOnClickListener(new OnClickListener(){
+			public void onClick(View v){
+				if (webvisible){
+					show.setText("Show sensors");
+					webvisible = false;
+					engine.setVisibility(View.INVISIBLE);
+				}
+				else{
+					show.setText("Hide sensor");
+					webvisible = true;
+					engine.setVisibility(View.VISIBLE);
+				}
+			}
+		});
 		
         //Event listener that always returns the variation of the angle in degrees, motion power in percentage and direction of movement
         joystick.setOnJoystickMoveListener(new OnJoystickMoveListener() {
@@ -129,39 +155,42 @@ public class robotremote extends Activity {
 			public void onValueChanged(int angle, int power, int direction) {
 				udpInUse = true;
 				udp Udp = new udp();
-				
+				String command;
 				switch (direction) {
 					case JoystickView.FRONT:
-						Udp.udpSend(ip,port,"Mforward");
+						command = "Mforward";
 						break;
 					case JoystickView.FRONT_RIGHT:
-						Udp.udpSend(ip,port,"Mforward-right");
+						command = "Mforward-right";
 						break;
 					case JoystickView.LEFT_FRONT:
-						Udp.udpSend(ip,port,"Mforward-left");
+						command = "Mforward-left";
 						break;
 					case JoystickView.RIGHT:
-						Udp.udpSend(ip,port,"Mright");
+						command = "Mright";
 						break;
 					case JoystickView.RIGHT_BOTTOM:
-						Udp.udpSend(ip,port,"Mbackward-right");
+						command = "Mbackward-right";
 						break;
 					case JoystickView.BOTTOM:
-						Udp.udpSend(ip,port,"Mbackward");
+						command = "Mbackward";
 						break;
 					case JoystickView.BOTTOM_LEFT:
-						Udp.udpSend(ip,port,"Mbackward-left");
+						command = "Mbackward-left";
 						break;
 					case JoystickView.LEFT:
-						Udp.udpSend(ip,port,"Mleft");
+						command = "Mleft";
 						break;
 					
 					default:
-						Udp.udpSend(ip,port,"Mstop");
+						command = "Mstop";
 						udpInUse = false;
 				}
+				try{
+					Udp.udpSend(ip,port,command);
+				}catch(Exception e){}
 			}
-		},JoystickView.DEFAULT_LOOP_INTERVAL);
+		},LOOP_INTERVAL);
 		
 		camjoystick.setOnJoystickMoveListener(new OnJoystickMoveListener() {
 				@Override
@@ -172,42 +201,44 @@ public class robotremote extends Activity {
 
 					switch (direction) {
 						case JoystickView.FRONT:
-							Vang += power/15;
+							Vang += power/SERVO_SPEED;
 							break;
 						case JoystickView.FRONT_RIGHT:
-							Vang += power/15;
-							Hang += power/15;
+							Vang += power/SERVO_SPEED;
+							Hang += power/SERVO_SPEED;
 							break;
 						
 						case JoystickView.RIGHT:
-							Hang += power/15;
+							Hang += power/SERVO_SPEED;
 							break;
 							
 						case JoystickView.RIGHT_BOTTOM:
-							Hang += power/15;
-							Vang -= power/15;
+							Hang += power/SERVO_SPEED;
+							Vang -= power/SERVO_SPEED;
 							break;
 							
 						case JoystickView.BOTTOM:
-							Vang -= power/15;
+							Vang -= power/SERVO_SPEED;
 							break;
 						case JoystickView.BOTTOM_LEFT:
-							Vang -= power/15;
-							Hang -= power/15;
+							Vang -= power/SERVO_SPEED;
+							Hang -= power/SERVO_SPEED;
 							break;
 						case JoystickView.LEFT:
-							Hang -= power/15;
+							Hang -= power/SERVO_SPEED;
 							break;
 						case JoystickView.LEFT_FRONT:
-							Hang -= power/15;
-							Vang += power/15;
+							Hang -= power/SERVO_SPEED;
+							Vang += power/SERVO_SPEED;
 							break;
 						default:
 						    Hang = 90;
 							Vang = 90;
 							udpInUse = false;
 					}
-					Udp.udpSend(ip,port,"C"+Integer.toString(Vang)+":"+Integer.toString(Hang));
+					try{
+						Udp.udpSend(ip,port,"C"+Integer.toString(Vang)+":"+Integer.toString(Hang));
+					}catch(Exception e){}
 				}
 			},JoystickView.DEFAULT_LOOP_INTERVAL);
 		
@@ -228,7 +259,12 @@ public class robotremote extends Activity {
         	tgDevice = new TGDevice(bluetoothAdapter, handler);
         }  
     }
-    
+    public void doStuff(View view) {
+		if(tgDevice.getState() != TGDevice.STATE_CONNECTING && tgDevice.getState() != TGDevice.STATE_CONNECTED){
+			tgDevice.connect(rawEnabled);
+		}
+	}
+	
     @Override
     public void onDestroy() {
     	tgDevice.close();
@@ -282,6 +318,7 @@ public class robotremote extends Activity {
             	break;
             case TGDevice.MSG_MEDITATION:
 				    Meditation.setText("M:"+msg.arg1);
+					/*
 					udpInUse = true;
 					udp Udp = new udp();
 					if (msg.arg1>MinMeditation){
@@ -292,9 +329,21 @@ public class robotremote extends Activity {
 						Udp.udpSend(ip,port,"Mstop");
 						udpInUse = false;
 					}
+					*/
 					
             	break;
             case TGDevice.MSG_BLINK:
+				udp Udp = new udp();
+				    if (MindForward){
+						MindForward = false;
+						Udp.udpSend(ip,port,"Mstop");
+						//lastCommandMind = false;
+					}
+					else{
+						MindForward = true;
+						Udp.udpSend(ip,port,"Mforward");
+						//lastCommandMind = true;
+					}
             		tv.append("Blink: " + msg.arg1 + "\n");
             	break;
             case TGDevice.MSG_RAW_COUNT:
@@ -349,9 +398,7 @@ public class robotremote extends Activity {
 					public void onClick(View v){
 						Saver saver = new Saver();
 						saver.writeToFile(getApplicationContext(),iptext.getText()+"\n"+porttext.getText()+"\n"+meditationtext.getText());
-						Intent xi = new Intent(getApplicationContext(), robotremote.class);
-						xi.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-						startActivity(xi);
+						finish();
 					}
 				});
 				return true;

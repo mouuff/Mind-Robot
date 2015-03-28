@@ -15,8 +15,6 @@ char ReplyBuffer[] = "pong";
 
 
 Servo ServoHorizontal, ServoVertical;
-int ServoAngH = 90;
-int ServoAngV = 90;
 
 WiFiUDP Udp;
 WiFiServer server(80);
@@ -24,10 +22,12 @@ WiFiServer server(80);
 //set up the pins
 int enableMD = 32;
 int enableMG = 30;
-int MD1 = 28;
-int MD2 = 26;
-int MG1 = 24;
-int MG2 = 22;
+
+int MD1 = 22;
+int MD2 = 24;
+int MG1 = 26;
+int MG2 = 28;
+
 
 
 void rmove(int dir){
@@ -41,84 +41,84 @@ void rmove(int dir){
     //depends how you connected the engine
     case (1):
       //avancer
-      digitalWrite(MD1,HIGH);
-      digitalWrite(MD2,LOW);
-      
       digitalWrite(MG1,HIGH);
       digitalWrite(MG2,LOW);
+      
+      digitalWrite(MD1,HIGH);
+      digitalWrite(MD2,LOW);
       break;
     case (2):
       //droite
       
-      digitalWrite(MD1,HIGH);
-      digitalWrite(MD2,LOW);
+      digitalWrite(MG1,HIGH);
+      digitalWrite(MG2,LOW);
       
-      digitalWrite(MG1,LOW);
-      digitalWrite(MG2,HIGH);
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,HIGH);
       
       break;
     
     case (3):
       //reculer
-      digitalWrite(MD1,LOW);
-      digitalWrite(MD2,HIGH);
-      
       digitalWrite(MG1,LOW);
       digitalWrite(MG2,HIGH);
+      
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,HIGH);
       break;
       
     case (4):
       //gauche
-      digitalWrite(MD1,LOW);
-      digitalWrite(MD2,HIGH);
+      digitalWrite(MG1,LOW);
+      digitalWrite(MG2,HIGH);
       
-      digitalWrite(MG1,HIGH);
-      digitalWrite(MG2,LOW);
+      digitalWrite(MD1,HIGH);
+      digitalWrite(MD2,LOW);
       break;
     
     case (5):
       //droite tout droit
-      digitalWrite(MD1,LOW);
-      digitalWrite(MD2,LOW);
-      
-      digitalWrite(MG1,HIGH);
+      digitalWrite(MG1,LOW);
       digitalWrite(MG2,LOW);
+      
+      digitalWrite(MD1,HIGH);
+      digitalWrite(MD2,LOW);
       break;
       
     case (6):
       //gauche tout droit
-      digitalWrite(MD1,HIGH);
-      digitalWrite(MD2,LOW);
-      
-      digitalWrite(MG1,LOW);
+      digitalWrite(MG1,HIGH);
       digitalWrite(MG2,LOW);
+      
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,LOW);
       break;
     
     case (7):
       //gauche arriere
-      digitalWrite(MD1,LOW);
-      digitalWrite(MD2,HIGH);
-      
       digitalWrite(MG1,LOW);
-      digitalWrite(MG2,LOW);
+      digitalWrite(MG2,HIGH);
+      
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,LOW);
       break;
     
     case (8):
       //droite arriere
-      digitalWrite(MD1,LOW);
-      digitalWrite(MD2,LOW);
-      
       digitalWrite(MG1,LOW);
-      digitalWrite(MG2,HIGH);
+      digitalWrite(MG2,LOW);
+      
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,HIGH);
       break;
    
      
     default:
-      digitalWrite(MD1,LOW);
-      digitalWrite(MD2,LOW);
-      
       digitalWrite(MG1,LOW);
       digitalWrite(MG2,LOW);
+      
+      digitalWrite(MD1,LOW);
+      digitalWrite(MD2,LOW);
       break;
   }
 }
@@ -126,17 +126,17 @@ void rmove(int dir){
 void setup() {
   Serial.begin(9600);
   
-  ServoVertical.attach(15);
-  ServoHorizontal.attach(14);
+  ServoVertical.attach(14);
+  ServoHorizontal.attach(15);
   //servos must be powered by 3.3v on arduino
   //otherwise it could crash the wifi shield
   
-  ServoHorizontal.write(ServoAngH);
-  ServoVertical.write(ServoAngV);
+  ServoHorizontal.write(90);
+  ServoVertical.write(90);
   
-  pinMode(MD1,OUTPUT);
-  pinMode(MD2,OUTPUT);
   pinMode(MG1,OUTPUT);
+  pinMode(MG2,OUTPUT);
+  pinMode(MD1,OUTPUT);
   pinMode(MD2,OUTPUT);
   pinMode(enableMD,OUTPUT);
   pinMode(enableMG,OUTPUT);
@@ -235,6 +235,7 @@ void loop() {
       ServoVertical.write(Vang);
       
       Serial.println(Vang);
+      Serial.println(Hang);
     }
     
     if (packetBuffer[0] == 'M'){
@@ -278,9 +279,10 @@ void loop() {
         Serial.println(packetBuffer);
       }
     }
-    
+    /*
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
     Udp.write(ReplyBuffer);
     Udp.endPacket();
+    */
   }
 }

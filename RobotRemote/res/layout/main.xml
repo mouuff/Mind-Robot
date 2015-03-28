@@ -12,6 +12,14 @@
 		android:layout_above="@+id/logScroll"
 		android:layout_width="wrap_content"
 		android:layout_centerHorizontal="true"/>
+	
+	<Button
+		android:layout_height="wrap_content"
+		android:text="Show sensors"
+		android:id="@+id/showSensor"
+		android:layout_width="wrap_content"
+		android:layout_above="@id/connect"
+		android:layout_centerHorizontal="true"/>
 
 	<ScrollView
 		android:layout_height="40dp"
@@ -50,7 +58,7 @@
 		android:layout_height="150dp"
 		android:layout_width="150dp"
 		android:layout_alignParentLeft="true"/>
-	
+
 	<com.zerokol.views.JoystickView
 		android:id="@+id/CamJoystick"
 		android:layout_above="@id/logScroll"
@@ -59,10 +67,10 @@
 		android:layout_alignParentRight="true"/>
 
 	<WebView
-		android:layout_width="150dp"
-		android:layout_height="150dp"
+		android:layout_width="350dp"
+		android:layout_height="200dp"
 		android:layout_centerHorizontal="true"
-		android:layout_above="@id/connect"
+		android:layout_above="@id/showSensor"
 		android:id="@+id/capteurs"/>
 
 </RelativeLayout>
